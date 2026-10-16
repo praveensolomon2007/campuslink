@@ -8,6 +8,7 @@ function Home({ userId, role, activeTab, setActiveTab, opportunities, setOpportu
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [notice, setNotice] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const [userSkillsInput, setUserSkillsInput] = useState("React, Presentation");
 
   const filteredOpportunities = useMemo(() => {
@@ -23,21 +24,58 @@ function Home({ userId, role, activeTab, setActiveTab, opportunities, setOpportu
     userSkillsInput.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean),
   [userSkillsInput]);
 
-  function askQuestion(event) {
+  async function askQuestion(event) {
     event.preventDefault();
     if (!question.trim()) return;
-    const q = question.toLowerCase();
 
-    if (q.includes("skill") || q.includes("know") || q.includes("learn")) {
-      setAnswer(`The listed skills are: ${selectedEvent.skills.join(", ")}.`);
-    } else if (q.includes("deadline") || q.includes("last date")) {
-      setAnswer(`The registration deadline is ${selectedEvent.deadline}.`);
-    } else if (q.includes("eligible") || q.includes("who can") || q.includes("beginner")) {
-      setAnswer(selectedEvent.eligibility);
-    } else if (q.includes("team") || q.includes("member")) {
-      setAnswer(`The team size is ${selectedEvent.teamSize}.`);
-    } else {
-      setAnswer(`${selectedEvent.description} Listed skills: ${selectedEvent.skills.join(", ")}.`);
+    setAnswer("");
+    setIsTyping(true);
+
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    if (!apiKey) {
+      setIsTyping(false);
+      setAnswer("Error: Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file and restart the server.");
+      return;
+    }
+
+    try {
+      const prompt = `You are a helpful campus event assistant for a platform called CampusLink. Answer the student's question based strictly on the following event information. If the answer isn't in the details, politely say you don't have that specific information but encourage them to check with the organizers.
+
+      Event Details:
+      Title: ${selectedEvent.title}
+      Description: ${selectedEvent.description}
+      Date: ${selectedEvent.date}
+      Deadline: ${selectedEvent.deadline}
+      Team Size: ${selectedEvent.teamSize}
+      Skills Required: ${selectedEvent.skills.join(", ")}
+      Eligibility: ${selectedEvent.eligibility}
+
+      Student's Question: ${question}
+
+      Keep your answer conversational, helpful, and concise (1 to 2 sentences).`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        setAnswer(`API Error: ${data.error.message}`);
+      } else if (data.candidates && data.candidates[0].content?.parts[0]?.text) {
+        setAnswer(data.candidates[0].content.parts[0].text);
+      } else {
+        setAnswer(`Unexpected API format. Response: ${JSON.stringify(data)}`);
+      }
+    } catch (error) {
+      setAnswer(`Network error: ${error.message}`);
+    } finally {
+      setIsTyping(false);
     }
   }
 
@@ -94,8 +132,8 @@ function Home({ userId, role, activeTab, setActiveTab, opportunities, setOpportu
           </h1>
           <p>
             {role === 'host' 
-              ? "Host hackathons, manage competitions, and watch student teams form around your campus initiatives."
-              : "Discover campus opportunities, understand what they require, and connect with people who want to build alongside you."}
+              ? "Host hackathons, manage competitions, and track forming teams. Doubts? Ask the AI assistant to solve your doubts."
+              : "Discover campus opportunities and find your team. Doubts? Ask the AI assistant to solve your doubts."}
           </p>
           <div className="hero-actions">
             {role === 'host' ? (
@@ -344,13 +382,15 @@ function Home({ userId, role, activeTab, setActiveTab, opportunities, setOpportu
             <div className="skill-list">
               {selectedEvent.skills.map(s => <span key={s}>{s}</span>)}
             </div>
-            <h3>Ask about this opportunity</h3>
-            <p className="assistant-disclaimer">Rule-based demo assistant.</p>
+            <h3>Ask the CampusLink AI Assistant</h3>
+            <p className="assistant-disclaimer">Powered by Gemini. Ask me anything about this opportunity.</p>
             <form className="question-form" onSubmit={askQuestion}>
-              <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. What skills are needed?" />
-              <button className="primary-button" type="submit">Ask →</button>
+              <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. What skills are needed?" required />
+              <button className="primary-button" type="submit" disabled={isTyping}>
+                {isTyping ? "Asking..." : "Ask →"}
+              </button>
             </form>
-            {answer && <div className="answer-box"><strong>CampusLink assistant</strong><p>{answer}</p></div>}
+            {answer && <div className="answer-box"><strong>AI Assistant</strong><p>{answer}</p></div>}
             <button className="secondary-button modal-done" onClick={() => setSelectedEvent(null)}>Close</button>
           </section>
         </div>
