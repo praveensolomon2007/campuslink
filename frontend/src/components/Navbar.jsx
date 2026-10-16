@@ -1,6 +1,8 @@
 function Navbar({ theme, onToggleTheme, role, onSwitchRole, onNavigate }) {
   const handleNav = (tab) => {
-    onNavigate(tab);
+    if (onNavigate) {
+      onNavigate(tab);
+    }
     document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -18,6 +20,7 @@ function Navbar({ theme, onToggleTheme, role, onSwitchRole, onNavigate }) {
         <button onClick={() => handleNav("opportunities")} className="nav-action">Opportunities</button>
         <button onClick={() => handleNav("teams")} className="nav-action">Teams</button>
         <a href="#manage" className="nav-action">Ignite</a>
+        <a href="#about" className="nav-action">About</a>
         <button onClick={onSwitchRole} className="nav-action">Switch Role</button>
         <button onClick={onToggleTheme} className="theme-toggle">
           {theme === "light" ? "🌙 Dark" : "☀️ Light"}

@@ -125,6 +125,53 @@ function App() {
         opportunities={opportunities} setOpportunities={setOpportunities}
         teams={teams} setTeams={setTeams}
       />
+      
+      {/* About Section and Footer placed at the very bottom */}
+      <div className="page-shell">
+        <section className="how-section" id="about" style={{ margin: '80px 0' }}>
+          <div>
+            <span className="eyebrow">ABOUT CAMPUSLINK</span>
+            <h2>Where opportunities meet people.</h2>
+            <p>Campus opportunities are scattered across posters, group chats, and word of mouth. CampusLink brings everything into one unified platform.</p>
+          </div>
+
+          <div className="steps-list">
+            <div className="step-item">
+              <span>01</span>
+              <div>
+                <h3>Centralized Discovery</h3>
+                <p>No more missing out. Find hackathons, workshops, and competitions all in one place.</p>
+              </div>
+            </div>
+
+            <div className="step-item">
+              <span>02</span>
+              <div>
+                <h3>Skill-Based Teambuilding</h3>
+                <p>Don't have a team? Enter your skills and find the perfect group forming for your target event.</p>
+              </div>
+            </div>
+
+            <div className="step-item">
+              <span>03</span>
+              <div>
+                <h3>Seamless Collaboration</h3>
+                <p>Host rooms, share join codes, and get straight to building meaningful projects together.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="site-footer" id="footer">
+          <a className="footer-brand" href="#home">
+            CampusLink<span>.</span>
+          </a>
+          <p>Where Opportunities Meet People.</p>
+          <span>
+            Student prototype · Sample data · Not affiliated with listed events
+          </span>
+        </footer>
+      </div>
     </div>
   );
 }
