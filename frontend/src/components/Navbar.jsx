@@ -1,48 +1,27 @@
-function Navbar() {
-  function showSection(tab) {
-    document.getElementById("discover")?.scrollIntoView({
-      behavior: "smooth",
-    });
-
-    window.setTimeout(() => {
-      const buttons = document.querySelectorAll(".tabs .tab");
-      const targetIndex = tab === "teams" ? 1 : 0;
-      buttons[targetIndex]?.click();
-    }, 100);
-  }
+function Navbar({ theme, onToggleTheme, role, onSwitchRole, onNavigate }) {
+  const handleNav = (tab) => {
+    onNavigate(tab);
+    document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <nav>
       <div>
-        <a className="nav-brand" href="#home">
-          <h2>CampusLink</h2>
-        </a>
+        <h2>
+          <a href="#home" className="nav-brand">
+            CampusLink<span>.</span>
+          </a>
+        </h2>
+        <span className="role-badge">{role === 'host' ? 'Host View' : 'Student View'}</span>
       </div>
-
       <div>
-        <a href="#home">Home</a>
-
-        <a
-          href="#discover"
-          onClick={(event) => {
-            event.preventDefault();
-            showSection("opportunities");
-          }}
-        >
-          Opportunities
-        </a>
-
-        <a
-          href="#discover"
-          onClick={(event) => {
-            event.preventDefault();
-            showSection("teams");
-          }}
-        >
-          Teams
-        </a>
-
-        <a href="#footer">About</a>
+        <button onClick={() => handleNav("opportunities")} className="nav-action">Opportunities</button>
+        <button onClick={() => handleNav("teams")} className="nav-action">Teams</button>
+        <a href="#manage" className="nav-action">Ignite</a>
+        <button onClick={onSwitchRole} className="nav-action">Switch Role</button>
+        <button onClick={onToggleTheme} className="theme-toggle">
+          {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+        </button>
       </div>
     </nav>
   );
